@@ -88,3 +88,5 @@
 --reference:/Users/marcin/.nuget/packages/System.Xml.ReaderWriter/4.3.0/ref/netstandard1.3/System.Xml.ReaderWriter.dll
 --reference:/Users/marcin/.nuget/packages/System.Xml.XDocument/4.3.0/ref/netstandard1.3/System.Xml.XDocument.dll
 /Users/marcin/Desktop/DotNetApp/Program.cs
+/Users/marcin/Desktop/DotNetApp/Model/car.cs
+/Users/marcin/Desktop/DotNetApp/Model/IFactory.cs
