@@ -33,3 +33,34 @@ INNER JOIN sys.dm_exec_requests ER
 CROSS APPLY SYS.DM_EXEC_SQL_TEXT(er.sql_handle) EST
 CROSS APPLY sys.dm_exec_query_plan(er.plan_handle ) u
 ORDER BY CPU DESC   
+
+-- STATS UPDATED
+SELECT OBJECT_NAME(s.[object_id]) AS [ObjectName]
+      ,s.[name] AS [StatisticName]
+      ,STATS_DATE(s.[object_id], s.[stats_id]) AS [StatisticUpdateDate]
+-- select *
+FROM sys.stats AS s
+JOIN sys.objects o
+       on s.object_id = o.object_id
+WHERE type = 'U'
+--and OBJECT_NAME(s.[object_id])  like '%job%'
+
+
+-- STATS QUERY 
+SELECT
+
+OBJECT_NAME([sp].[object_id]) AS "Table",
+[sp].[stats_id] AS "Statistic ID",
+[s].[name] AS "Statistic",
+[sp].[last_updated] AS "Last Updated",
+[sp].[rows],
+[sp].[rows_sampled],
+[sp].[unfiltered_rows],
+[sp].[modification_counter] AS "Modifications"
+,[sp].[modification_counter]/ cast([sp].[unfiltered_rows] as float) percentOfmodifed
+-- select *
+FROM [sys].[stats] AS [s]
+JOIN sys.[tables] AS t
+    ON [s].[object_id] = [t].[object_id] and  t.type = 'u'
+OUTER APPLY sys.dm_db_stats_properties ([s].[object_id],[s].[stats_id]) AS [sp]
+order by percentOfmodifed desc
