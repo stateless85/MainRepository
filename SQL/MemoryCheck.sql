@@ -1,3 +1,5 @@
+-- https://blogs.msdn.microsoft.com/sqlqueryprocessing/2010/02/16/understanding-sql-server-memory-grant/
+
 --Identify wait stats
 SELECT * FROM SYSPROCESSES
 ORDER BY lastwaittype
