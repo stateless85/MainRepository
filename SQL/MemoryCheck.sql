@@ -30,8 +30,8 @@ join sys.dm_exec_sessions as s
 	on s.session_id = r.session_id
 INNER JOIN sys.dm_resource_governor_resource_pools AS PO
 	ON PO.Pool_id = gr.Pool_Id
-CROSS APPLY sys.dm_exec_sql_text(gr.sql_handle) AS QT
-CROSS APPLY sys.dm_exec_query_plan (gr.plan_handle) AS PH
+OUTER APPLY sys.dm_exec_sql_text(gr.sql_handle) AS QT
+OUTER APPLY sys.dm_exec_query_plan (gr.plan_handle) AS PH
 
 -- Find who uses the most query memory grant:
 SELECT TOP(20) mg.granted_memory_kb, mg.session_id, t.text, qp.query_plan
