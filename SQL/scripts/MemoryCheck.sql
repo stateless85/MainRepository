@@ -47,3 +47,43 @@ JOIN sys.dm_exec_query_stats AS qs ON cp.plan_handle = qs.plan_handle
 CROSS APPLY sys.dm_exec_query_plan(cp.plan_handle) AS qp
 CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) AS t
 WHERE qp.query_plan.exist(‘declare namespace n=”http://schemas.microsoft.com/sqlserver/2004/07/showplan“; //n:MemoryFractions’) = 1
+
+-- Memory Monitor Per Database
+SELECT
+ [DatabaseName] = CASE [database_id] WHEN 32767
+ THEN 'Resource DB'
+ ELSE DB_NAME([database_id]) END,
+ COUNT_BIG(*) [Pages in Buffer],
+ COUNT_BIG(*)/128 [Buffer Size in MB]
+FROM sys.dm_os_buffer_descriptors
+GROUP BY [database_id]
+ORDER BY [Pages in Buffer] DESC;
+
+-- Memory usage by DB object
+SELECT obj.name [Object Name], o.type_desc [Object Type],
+i.name [Index Name], i.type_desc [Index Type],
+COUNT(*) AS [Cached Pages Count],
+COUNT(*)/128 AS [Cached Pages In MB]
+FROM sys.dm_os_buffer_descriptors AS bd
+INNER JOIN
+(
+SELECT object_name(object_id) AS name, object_id
+,index_id ,allocation_unit_id
+FROM sys.allocation_units AS au
+INNER JOIN sys.partitions AS p
+ON au.container_id = p.hobt_id
+AND (au.type = 1 OR au.type = 3)
+UNION ALL
+SELECT object_name(object_id) AS name, object_id
+,index_id, allocation_unit_id
+FROM sys.allocation_units AS au
+INNER JOIN sys.partitions AS p
+ON au.container_id = p.partition_id
+AND au.type = 2
+) AS obj
+ON bd.allocation_unit_id = obj.allocation_unit_id
+INNER JOIN sys.indexes i ON obj.[object_id] = i.[object_id]
+INNER JOIN sys.objects o ON obj.[object_id] = o.[object_id]
+WHERE database_id = DB_ID()
+GROUP BY obj.name, i.type_desc, o.type_desc,i.name
+ORDER BY [Cached Pages In MB] DESC; 
