@@ -29,7 +29,8 @@ AND i.type_desc = 'CLUSTERED'
 ORDER BY (dm_ius.user_seeks + dm_ius.user_scans + dm_ius.user_lookups) ASC
 
 -- Stats on Table
-SELECT sp.stats_id, name, filter_definition, last_updated, rows, rows_sampled, steps, unfiltered_rows, modification_counter  
+SELECT sp.stats_id, name, filter_definition, last_updated, rows, rows_sampled, steps, unfiltered_rows, modification_counter 
+ ,STATS_DATE(stat.object_id, stat.stats_id) AS statistics_date 
 FROM sys.stats AS stat  
 CROSS APPLY sys.dm_db_stats_properties(stat.object_id, stat.stats_id) AS sp 
 WHERE stat.object_id = OBJECT_ID('dbo.DimCustomer');
