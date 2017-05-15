@@ -34,3 +34,21 @@ SELECT sp.stats_id, name, filter_definition, last_updated, rows, rows_sampled, s
 FROM sys.stats AS stat  
 CROSS APPLY sys.dm_db_stats_properties(stat.object_id, stat.stats_id) AS sp 
 WHERE stat.object_id = OBJECT_ID('dbo.DimCustomer');
+
+-- STATS QUERY 
+SELECT
+OBJECT_NAME([sp].[object_id]) AS "Table",
+[sp].[stats_id] AS "Statistic ID",
+[s].[name] AS "Statistic",
+[sp].[last_updated] AS "Last Updated",
+[sp].[rows],
+[sp].[rows_sampled],
+[sp].[unfiltered_rows],
+[sp].[modification_counter] AS "Modifications"
+,[sp].[modification_counter]/ cast([sp].[unfiltered_rows] as float) percentOfmodifed
+-- select *
+FROM [sys].[stats] AS [s]
+JOIN sys.[tables] AS t
+    ON [s].[object_id] = [t].[object_id] and  t.type = 'u'
+OUTER APPLY sys.dm_db_stats_properties ([s].[object_id],[s].[stats_id]) AS [sp]
+order by percentOfmodifed desc
