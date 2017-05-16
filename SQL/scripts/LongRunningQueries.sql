@@ -1,3 +1,9 @@
+-- search object definitions
+SELECT name   ,Object_definition(object_id)
+FROM   sys.procedures
+WHERE  Object_definition(object_id) LIKE '%Datasetjobrollup%'
+
+
 SELECT SPID,ER.percent_complete,
 
  CAST(((DATEDIFF(s,start_time,GetDate()))/3600) as varchar)       + ' hour(s), '
