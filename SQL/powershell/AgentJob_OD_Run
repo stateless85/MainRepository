@@ -1,0 +1,43 @@
+function Invoke-SqlAgentJob
+{
+[CmdletBinding()]
+param(  
+	[Parameter(Mandatory=$false)] #server where we want to deploy SSIS project
+	[string]	$sqlServerInstance 		= "",
+	
+	[Parameter(Mandatory=$false)] #server where configuration should be read from. Project and global parameters config
+	[string]	$sqlServerDatabase 		= "",
+	
+	[Parameter(Mandatory=$false)] #path to directory that stores SSIS build
+	[string]	$sqlServerCommand		= ""
+	
+)#end param
+
+	$connectionString = "Data Source=$sqlServerInstance; "+"Initial Catalog=$sqlServerDatabase;Trusted_Connection=True;"
+    $connection = new-object system.data.SqlClient.SQLConnection($connectionString)
+	
+	Write-Verbose $connectionString
+	
+	$err = 0;
+
+	## Attach the InfoMessage Event Handler to the connection to write out the messages
+ 	$handler = [System.Data.SqlClient.SqlInfoMessageEventHandler] {param($sender, $event) 
+        Write-Host $event.Message;
+        $err = 1;
+    };
+	$connection.add_InfoMessage($handler);
+	$connection.FireInfoMessageEventOnUserErrors = $false;
+	
+    $connection.Open()	
+
+    $command = new-object system.data.sqlclient.sqlcommand($sqlServerCommand,$connection)
+
+	$command.CommandTimeout = 0				
+	$command.ExecuteNonQuery()			
+    $connection.Close()
+	
+   	if ($err -eq 1) 
+	{
+        throw "Job Failed $sqlServerCommand "
+    }	
+}
